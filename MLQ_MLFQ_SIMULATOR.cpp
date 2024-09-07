@@ -61,6 +61,13 @@ vector<Proceso> leerMLQ(const string& nombreArchivo){
 
 vector<int> calculate(vector<Proceso> procesosEjecutados){
 	vector<int> waitTAT = {0, 0};
+	cout << "Id"<< "\t" 
+             << "AT" << "\t" 
+             << "BT" << "\t"
+             << "RT" << "\t"
+             << "CT" << "\t"
+             << "WT" << "\t"
+             << "TAT" << "\n";
 	for(Proceso pro:procesosEjecutados){
 		cout << pro.id << "\t" 
              << pro.at << "\t" 
@@ -136,29 +143,30 @@ vector<int> MLQ(int numColas){
 	vector<Proceso> procesos = leerMLQ("prueba.txt");
 	sort(procesos.begin(), procesos.end(), compareProcesos);
 	
-	for (Proceso pro: procesos){
-		colas[pro.p].push(pro);
-	}
 	
+	for (Proceso pro: procesos){
+		colas[pro.p-1].push(pro);
+	}
 	
 	string schedulingTypes[numColas];
 	int quantum[numColas];
 	
-	for (int i = 1; i <= numColas; i++) {
-        cout << "Elige el scheduling para la cola " << i << " (FCFS or RR): ";
+	for (int i = 0; i < numColas; i++) {
+        cout << "Elige el scheduling para la cola " << i+1 << " (FCFS or RR): ";
         // Entradas esperados: FCFS / RR
         cin >> schedulingTypes[i];
         if (schedulingTypes[i] == "RR") {
-            cout << "Ingresa el quantum para la cola " << i << ": ";
+            cout << "Ingresa el quantum para la cola " << i+1 << ": ";
             cin >> quantum[i];
         }
     }
+    
 	
 	int time = 0;
 	vector<Proceso> procesosEjecutados;
-	for(int i = 1; i<=numColas; i++){
+	for(int i = 0; i<numColas; i++){
 		if(!colas[i].empty()){
-			cout << "Corriendo cola " << i << " con scheduling " << schedulingTypes[i] <<endl;
+			cout << "Corriendo cola " << i+1 << " con scheduling " << schedulingTypes[i] <<endl;
 			if (schedulingTypes[i] == "FCFS") {
                 simularFCFS(colas[i], time, procesosEjecutados);
             } else if (schedulingTypes[i] == "RR") {
