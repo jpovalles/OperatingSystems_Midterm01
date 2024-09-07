@@ -160,10 +160,8 @@ vector<int> MLQ(int numColas){
 		if(!colas[i].empty()){
 			cout << "Corriendo cola " << i << " con scheduling " << schedulingTypes[i] <<endl;
 			if (schedulingTypes[i] == "FCFS") {
-				cout <<"pass";
                 simularFCFS(colas[i], time, procesosEjecutados);
             } else if (schedulingTypes[i] == "RR") {
-            	cout <<"pass";
                 simularRoundRobin(colas[i], time, procesosEjecutados, quantum[i]);
             }
 		}
