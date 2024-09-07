@@ -164,7 +164,7 @@ vector<int> MLQ(int numColas){
                 simularFCFS(colas[i], time, procesosEjecutados);
             } else if (schedulingTypes[i] == "RR") {
             	cout <<"pass";
-                //simularRoundRobin(colas[i], time, procesosEjecutados, quantum[i]);
+                simularRoundRobin(colas[i], time, procesosEjecutados, quantum[i]);
             }
 		}
 	}
