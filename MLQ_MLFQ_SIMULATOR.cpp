@@ -59,8 +59,8 @@ vector<Proceso> leerMLQ(const string& nombreArchivo){
     return resultado;
 }
 
-vector<int> calculate(vector<Proceso> procesosEjecutados){
-	vector<int> waitTAT = {0, 0};
+vector<double> calculate(vector<Proceso> procesosEjecutados){
+	vector<double> waitTAT = {0, 0};
 	cout << "Id"<< "\t" 
              << "AT" << "\t" 
              << "BT" << "\t"
@@ -77,7 +77,7 @@ vector<int> calculate(vector<Proceso> procesosEjecutados){
              << pro.waiting << "\t"
              << pro.tat << "\n";
         
-        waitTAT[1] += pro.waiting;
+        waitTAT[0] += pro.waiting;
         waitTAT[1] += pro.tat;
 	}
 	return waitTAT;
@@ -138,7 +138,7 @@ void simularRoundRobin(queue<Proceso> &cola, int &time, vector<Proceso> &proceso
 
 
 
-vector<int> MLQ(int numColas){
+vector<double> MLQ(int numColas){
 	vector<queue<Proceso>> colas(numColas);
 	vector<Proceso> procesos = leerMLQ("prueba.txt");
 	sort(procesos.begin(), procesos.end(), compareProcesos);
@@ -175,7 +175,7 @@ vector<int> MLQ(int numColas){
 		}
 	}
 	
-	vector<int> responses = calculate(procesosEjecutados);
+	vector<double> responses = calculate(procesosEjecutados);
 	responses.push_back(procesosEjecutados.size());
 	return responses;
 }
@@ -188,7 +188,7 @@ int main(){
 		cout << "Ingrese la cantidad de colas a simular MLQ ";
 		cin >> numColas;
 	}while(numColas<1);
-	vector<int> rsp = MLQ(numColas);
+	vector<double> rsp = MLQ(numColas);
 	
 	double avgWaiting = rsp[0]/rsp[2];
 	double avgTAT = rsp[1]/rsp[2];
