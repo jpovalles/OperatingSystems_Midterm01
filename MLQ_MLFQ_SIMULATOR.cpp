@@ -11,6 +11,7 @@ using namespace std;
 struct Proceso{
 	int id, bt, at, p, remaining;
 	int start, end, waiting, tat = 0;
+	bool ejecutado;
 };
 
 bool compareProcesos(Proceso p1, Proceso p2){
@@ -50,6 +51,31 @@ vector<Proceso> leerMLQ(const string& nombreArchivo){
         while (getline(archivo, linea)) {
             vector<string> inProceso = split(linea);
             Proceso temp = {stoi(inProceso[0]),stoi(inProceso[1]),stoi(inProceso[2]),stoi(inProceso[3])};
+            temp.ejecutado = false;
+            temp.start = -1;
+            temp.end, temp.waiting, temp.tat = 0;
+            temp.remaining = temp.bt;
+            resultado.push_back(temp);
+        }
+        archivo.close();
+    } else {
+        cout << "No se pudo abrir el archivo." << std::endl;
+    }
+    return resultado;
+}
+
+vector<Proceso> leerMLFQ(const string& nombreArchivo){
+    vector<Proceso> resultado;
+    ifstream archivo(nombreArchivo);
+    string linea;
+    if (archivo.is_open()) {
+        while (getline(archivo, linea)) {
+            vector<string> inProceso = split(linea);
+            Proceso temp = {stoi(inProceso[0]),stoi(inProceso[1]),stoi(inProceso[2])};
+            temp.ejecutado = false;
+            temp.start = -1;
+            temp.end, temp.waiting, temp.tat = 0;
+            temp.remaining = temp.bt;
             resultado.push_back(temp);
         }
         archivo.close();
@@ -136,9 +162,102 @@ void simularRoundRobin(queue<Proceso> &cola, int &time, vector<Proceso> &proceso
 	}
 }
 
+void simularMLFQ(vector<queue<Proceso>> &colas, vector<int> &quantums, int &time, vector<Proceso> &procesosEjecutados){
+	int numColas = colas.size();
+	bool todoVacio = true;
+	
+	while(todoVacio){
+		for(int i = 0; i<numColas; ++i){
+			if(!colas[i].empty()){
+				todoVacio = false;
+				
+				if (i==numColas-1){
+					// Si es la ultima cola, usa FCFS
+					cout << "Simulando FCFS en la ultima cola"<<endl;
+					simularFCFS(colas[i], time, procesosEjecutados);
+				}else{
+					cout << "Simulando cola "<<i+1<< " Round Robin con quantum "<<quantums[i]<<endl;
+					queue<Proceso> temp;
+					while(!colas[i].empty()){
+						Proceso pro = colas[i].front();
+						colas[i].pop();
 
+						if(pro.start == -1){
+							// Los procesos con inicio -1 no han sido atendidos
+							pro.start = max(time, pro.at);
+						}
+						int timeSlice = min(quantums[i], pro.remaining);
+						time += timeSlice;
+						pro.remaining -= timeSlice;
+						
+						if(pro.remaining ==0){
+							// Si el proceso termina, lo agregamos a los procesos ejecutados
+							pro.end = time;
+							pro.tat = pro.end-pro.at;
+							pro.waiting = pro.tat-pro.bt;
+							
+							procesosEjecutados.push_back(pro);
+							cout << "El proceso " << pro.id << " finalizo en tiempo " << pro.end << endl;
+						}else{
+							// Si no termina, pasa a la cola de menor prioridad
+							if(i<numColas-1){
+								colas[i+1].push(pro);
+							}else{
+								// Mantener en la misma cola si es la ultima
+								temp.push(pro);
+							}
+						}
+					}
+					
+					if(!temp.empty()){
+						while(!temp.empty()){
+							colas[i].push(temp.front());
+							temp.pop();
+						}
+					}
+				}
+			}
+		}
+		if (todoVacio) break;
+	}
+}
 
-vector<double> MLQ(int numColas){
+vector<double> MLFQ(){
+	int numColas;
+	do{
+		cout << "Ingrese la cantidad de colas a simular MLQ ";
+		cin >> numColas;
+		if(numColas<2) cout << endl<<"El minimo de colas a ejecutar es 2!" <<endl<<endl;
+	}while(numColas<2);
+	
+	vector<queue<Proceso>> colas(numColas);
+	vector<Proceso> procesos = leerMLFQ("prueba.txt");
+	sort(procesos.begin(), procesos.end(), compareProcesos);
+	
+	vector<int> quantums(numColas-1);
+	
+	for(Proceso pro:procesos){
+		colas[0].push(pro);
+	}
+	
+	for(int i = 0; i < numColas-1; i++){
+		cout << "Ingresa el quantum para la cola " << i+1;
+		cin >> quantums[i];
+	}
+	cout << "La cola " << numColas << " correra el algoritmo First come, first served" << endl;
+	
+	int time = 0;
+	vector<Proceso> procesosEjecutados;
+	
+	simularMLFQ(colas, quantums, time, procesosEjecutados);
+	
+	vector<double> responses = calculate(procesosEjecutados);
+	responses.push_back(procesosEjecutados.size());
+	return responses;
+}
+
+vector<double> MLQ(){
+	int numColas;
 	do{
 		cout << "Ingrese la cantidad de colas a simular MLQ ";
 		cin >> numColas;
@@ -203,10 +322,9 @@ int main(){
 	vector<double> rsp;
 	
 	if(opcScheduling){
-		rsp = MLQ(numColas);	
+		rsp = MLQ();	
 	}else{
-		cout<<"pass";
-		rsp = MFLQ(numColas);	
+		rsp = MLFQ();	
 	}
 	
 	
