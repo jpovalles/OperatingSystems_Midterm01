@@ -139,6 +139,12 @@ void simularRoundRobin(queue<Proceso> &cola, int &time, vector<Proceso> &proceso
 
 
 vector<double> MLQ(int numColas){
+	do{
+		cout << "Ingrese la cantidad de colas a simular MLQ ";
+		cin >> numColas;
+		if(numColas<2) cout << endl<<"El minimo de colas a ejecutar es 2!" <<endl<<endl;
+	}while(numColas<2);
+	
 	vector<queue<Proceso>> colas(numColas);
 	vector<Proceso> procesos = leerMLQ("prueba.txt");
 	sort(procesos.begin(), procesos.end(), compareProcesos);
@@ -148,14 +154,17 @@ vector<double> MLQ(int numColas){
 		colas[pro.p-1].push(pro);
 	}
 	
-	string schedulingTypes[numColas];
+	int schedulingTypes[numColas];
+	string schedulingNames[2];
 	int quantum[numColas];
 	
 	for (int i = 0; i < numColas; i++) {
-        cout << "Elige el scheduling para la cola " << i+1 << " (FCFS or RR): ";
-        // Entradas esperados: FCFS / RR
-        cin >> schedulingTypes[i];
-        if (schedulingTypes[i] == "RR") {
+        do{
+        	cout << "Elige el scheduling para la cola " << i+1 << " (1. FCFS o 2. RR): ";
+        	cin >> schedulingTypes[i];
+        	if (schedulingTypes[i]!=1 || schedulingTypes[i]!=2) cout <<endl<< "Elige una opcion valida!"<<endl<< endl;
+		}while(schedulingTypes[i]!=1 && schedulingTypes[i]!=2);
+        if (schedulingTypes[i] == 2) {
             cout << "Ingresa el quantum para la cola " << i+1 << ": ";
             cin >> quantum[i];
         }
@@ -166,10 +175,10 @@ vector<double> MLQ(int numColas){
 	vector<Proceso> procesosEjecutados;
 	for(int i = 0; i<numColas; i++){
 		if(!colas[i].empty()){
-			cout << "Corriendo cola " << i+1 << " con scheduling " << schedulingTypes[i] <<endl;
-			if (schedulingTypes[i] == "FCFS") {
+			cout << "Corriendo cola " << i+1 << " con scheduling " << schedulingNames[schedulingTypes[i]-1] <<endl;
+			if (schedulingTypes[i] == 1) {
                 simularFCFS(colas[i], time, procesosEjecutados);
-            } else if (schedulingTypes[i] == "RR") {
+            } else if (schedulingTypes[i] == 2) {
                 simularRoundRobin(colas[i], time, procesosEjecutados, quantum[i]);
             }
 		}
@@ -183,12 +192,23 @@ vector<double> MLQ(int numColas){
 
 
 int main(){
-	int numColas;
+	int numColas, opcScheduling;
+	
 	do{
-		cout << "Ingrese la cantidad de colas a simular MLQ ";
-		cin >> numColas;
-	}while(numColas<1);
-	vector<double> rsp = MLQ(numColas);
+		cout << "Elije el scheduling a ejecutar (1. MLQ o 2. MLFQ)" <<endl;
+		cin >> opcScheduling;
+		if(opcScheduling!=1 || opcScheduling!=2) cout << endl<<"Elije una opcion valida!" <<endl<<endl;
+	}while(opcScheduling!=1 && opcScheduling!=2);
+	
+	vector<double> rsp;
+	
+	if(opcScheduling){
+		rsp = MLQ(numColas);	
+	}else{
+		cout<<"pass";
+		rsp = MFLQ(numColas);	
+	}
+	
 	
 	double avgWaiting = rsp[0]/rsp[2];
 	double avgTAT = rsp[1]/rsp[2];
